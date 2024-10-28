@@ -38,8 +38,8 @@ except Exception as e:
     model_chat = None
 
 # Twilio account credentials
-account_sid = "AC428132525b161a85f44b619be525ec23"
-auth_token = "ade1d61a9822aaffc84e0c595bce39c8"
+account_sid = "YOUR_TWILIO_SID"
+auth_token = "YOUR_TWILIO_TOKEN"
 client = Client(account_sid, auth_token)
 
 # Load ML model for audio detection
@@ -520,8 +520,8 @@ def send_alert(location, map_link, shareable_link, client):
     try:
         message = client.messages.create(
             body=f"EMERGENCY ALERT: User in danger! Location: {location}. Map: {map_link}. Audio: {shareable_link}",
-            from_="+12097530237",
-            to="+919511972070"
+            from_="YOUR_TWILIO_NUMBER",
+            to="AUTHORITY_NUMBER"
         )
         logging.info("SMS alert sent successfully")
         return True
