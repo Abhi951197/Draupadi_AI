@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Assistance Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 97, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #0061ff, #60efff, #0061ff);
+            z-index: -1;
+            border-radius: 22px;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 20px rgba(0, 97, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: headerGlow 2s infinite;
+        }
+
+        @keyframes headerGlow {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .chat-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 400px;
+            max-height: calc(100vh - 200px);
+            background: #1a1a1a;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            position: relative;
+            animation: messageAppear 0.3s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 97, 255, 0.2);
+        }
+
+        .bot-message {
+            background: #2a2a2a;
+            color: #ffffff;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(96, 239, 255, 0.1);
+        }
+
+        .input-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+            display: flex;
+            gap: 10px;
+            box-sizing: border-box;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #2a2a2a;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+            resize: none;
+            max-height: 100px;
+            min-height: 50px;
+            box-sizing: border-box;
+            background: #2a2a2a;
+            color: white;
+        }
+
+        .message-input:focus {
+            border-color: #0061ff;
+            box-shadow: 0 0 15px rgba(0, 97, 255, 0.2);
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 97, 255, 0.2);
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 97, 255, 0.4);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: #2a2a2a;
+            border-radius: 15px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #60efff;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: blink 1s infinite;
+        }
+
+        .emergency-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 0 20px;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        .emergency-buttons.hidden {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        .emergency-button {
+            flex-grow: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 97, 255, 0.2);
+        }
+
+        .emergency-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 97, 255, 0.4);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Emergency Assistance Chatbot</h1>
+            <p>We're here to help 24/7</p>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                Hello! I'm here to help. If you're in any emergency situation, please don't hesitate to let me know.
+            </div>
+            <div class="typing-indicator" id="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="emergency-buttons" id="emergency-buttons">
+            <button class="emergency-button" data-text="i am in danger">I am in danger</button>
+            <button class="emergency-button" data-text="help me">Help Me</button>
+            <button class="emergency-button" data-text="safe">Safe</button>
+            <button class="emergency-button" data-text="emergency">Emergency</button>
+            <button class="emergency-button" data-text="save me">Save Me</button>
+        </div>
+        
+        <div class="input-container">
+            <textarea 
+                class="message-input" 
+                id="message-input"
+                placeholder="Type your message here..."
+                rows="1"
+            ></textarea>
+            <button class="send-button" id="send-button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const emergencyButtons = document.getElementById('emergency-buttons');
+        let isFirstMessage = true;
+
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        function hideEmergencyButtons() {
+            emergencyButtons.classList.add('hidden');
+        }
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            if (isFirstMessage && isUser) {
+                hideEmergencyButtons();
+                isFirstMessage = false;
+            }
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            addMessage(message, true);
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/generate_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input_text: message }),
+                });
+
+                const data = await response.json();
+                hideTypingIndicator();
+
+                if (data.redirect_url) {
+                    addMessage(data.response);
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    addMessage(data.response);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, there was an error processing your message. Please try again.', false);
+                console.error('Error:', error);
+            }
+        }
+
+        document.querySelectorAll('.emergency-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const message = this.getAttribute('data-text');
+                sendEmergencyMessage(message);
+            });
+        });
+
+        async function sendEmergencyMessage(message) {
+            addMessage(message, true);
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/generate_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input_text: message }),
+                });
+
+                const data = await response.json();
+                hideTypingIndicator();
+
+                if (data.redirect_url) {
+                    addMessage(data.response);
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000);
+                } else {
+                    addMessage(data.response);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Error processing your message. Please try again later.', false);
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

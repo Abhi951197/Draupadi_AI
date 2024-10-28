@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Alert</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+
+        .alert-container {
+            background: linear-gradient(145deg, #ff3636, #dc1c1c);
+            border-radius: 25px;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.3);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .alert-header {
+            margin-bottom: 25px;
+        }
+
+        .alert-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .alert-description {
+            font-size: 18px;
+            margin: 15px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .timer-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+        }
+
+        .timer-ring {
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .timer-background {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 12;
+        }
+
+        .timer-progress {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .cancel-button {
+            background-color: #fff;
+            color: #dc1c1c;
+        }
+
+        .send-button {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .alert-status {
+            margin-top: 20px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .alert-status.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="alert-container">
+        <div class="alert-header">
+            <h1 class="alert-title">Emergency Alert</h1>
+            <p class="alert-description">We've detected that you may need immediate assistance. Emergency services will be notified shortly.</p>
+        </div>
+
+        <div class="timer-container">
+            <svg class="timer-ring" width="200" height="200">
+                <circle class="timer-background" cx="100" cy="100" r="90"/>
+                <circle id="progressRing" class="timer-progress" cx="100" cy="100" r="90"/>
+            </svg>
+            <div class="timer-text" id="timer">15</div>
+        </div>
+
+        <div class="button-container">
+            <button class="button cancel-button" onclick="cancelAlert()">Cancel Alert</button>
+            <button class="button send-button" onclick="sendAlertNow()">Send Now</button>
+        </div>
+
+        <div id="alertStatus" class="alert-status"></div>
+    </div>
+
+    <script>
+        let countdown = 10;
+        const timerElement = document.getElementById('timer');
+        const progressRing = document.getElementById('progressRing');
+        const alertStatus = document.getElementById('alertStatus');
+        let countdownInterval;
+        let alertCanceled = false;
+
+        // Calculate circle properties
+        const radius = progressRing.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        progressRing.style.strokeDasharray = circumference;
+        progressRing.style.strokeDashoffset = 0;
+
+        function updateTimer() {
+            if (countdown > 0 && !alertCanceled) {
+                countdown--;
+                timerElement.textContent = countdown;
+                
+                // Update progress ring
+                const progress = countdown / 15;
+                const offset = circumference * (1 - progress);
+                progressRing.style.strokeDashoffset = offset;
+
+                if (countdown === 0) {
+                    sendAlert();
+                }
+            }
+        }
+
+        function startCountdown() {
+            countdownInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+
+        function showStatus(message, isError = false) {
+            alertStatus.textContent = message;
+            alertStatus.style.color = isError ? '#ff4444' : '#4caf50';
+            alertStatus.classList.add('visible');
+        }
+
+        function cancelAlert() {
+            alertCanceled = true;
+            clearInterval(countdownInterval);
+            
+            fetch('/cancel', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showStatus('Alert cancelled. Returning to chat...');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            })
+            .catch(error => {
+                showStatus('Error cancelling alert. Please try again.', true);
+                console.error('Error:', error);
+            });
+        }
+
+        function sendAlert() {
+            if (!alertCanceled) {
+                fetch('/confirm_alert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showStatus('Emergency services have been notified.');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                })
+                .catch(error => {
+                    showStatus('Error sending alert. Please try again.', true);
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        function sendAlertNow() {
+            clearInterval(countdownInterval);
+            sendAlert();
+        }
+
+        // Start the countdown when page loads
+        startCountdown();
+    </script>
+</body>
+</html>

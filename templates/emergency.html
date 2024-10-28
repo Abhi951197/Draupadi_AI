@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Contacts</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7209b7;
+            --secondary: #3f37c9;
+            --danger: #e63946;
+            --success: #2ec4b6;
+            --background: #13111C;
+            --card-bg: #1a1825;
+            --text: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border: #2f2b3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: var(--card-bg);
+            border-radius: 50% 50% 0 0;
+        }
+
+        .contacts-wrapper {
+            padding: 2rem;
+        }
+
+        .contact {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .contact:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .emergency-number {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .delete-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(230, 57, 70, 0.1);
+            color: var(--danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-button:hover {
+            background: rgba(230, 57, 70, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .add-contact {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .add-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(114, 9, 183, 0.3);
+        }
+
+        .input-form {
+            display: none;
+            margin-top: 1.5rem;
+            animation: slideDown 0.4s ease;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-field {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .save-button {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .save-button:hover {
+            background: #25a898;
+            transform: translateY(-2px);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Emergency Contacts</h1>
+        </div>
+        
+        <div class="contacts-wrapper">
+            <div id="contact-list">
+                <div class="contact">
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <span class="contact-name">Police</span>
+                            <span class="emergency-number">+91 100</span>
+                        </div>
+                    </div>
+                    <div class="delete-button" onclick="deleteContact(this)">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+
+                <div class="contact">
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-ambulance"></i>
+                        </div>
+                        <div class="contact-details">
+                            <span class="contact-name">Ambulance</span>
+                            <span class="emergency-number">+91 102</span>
+                        </div>
+                    </div>
+                    <div class="delete-button" onclick="deleteContact(this)">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+
+                <div class="contact">
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="contact-details">
+                            <span class="contact-name">Mumma</span>
+                            <span class="emergency-number">+91 1234567890</span>
+                        </div>
+                    </div>
+                    <div class="delete-button" onclick="deleteContact(this)">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+
+                <div class="contact">
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="contact-details">
+                            <span class="contact-name">Papa</span>
+                            <span class="emergency-number">+91 0987654321</span>
+                        </div>
+                    </div>
+                    <div class="delete-button" onclick="deleteContact(this)">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-contact">
+                <button class="add-button" onclick="toggleInputForm()">
+                    <i class="fas fa-plus"></i>
+                    Add Contact
+                </button>
+            </div>
+
+            <div class="input-form" id="input-form">
+                <div class="input-group">
+                    <input type="text" id="name" class="input-field" placeholder="Contact Name" required>
+                    <input type="text" id="number" class="input-field" placeholder="Phone Number" required>
+                </div>
+                <button class="save-button" onclick="addContact()">Save Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleInputForm() {
+            const form = document.getElementById('input-form');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
+
+        function addContact() {
+            const nameInput = document.getElementById('name');
+            const numberInput = document.getElementById('number');
+            const contactList = document.getElementById('contact-list');
+
+            if (nameInput.value && numberInput.value) {
+                const contactDiv = document.createElement('div');
+                contactDiv.className = 'contact';
+                contactDiv.innerHTML = `
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="contact-details">
+                            <span class="contact-name">${nameInput.value}</span>
+                            <span class="emergency-number">${numberInput.value}</span>
+                        </div>
+                    </div>
+                    <div class="delete-button" onclick="deleteContact(this)">
+                        <i class="fas fa-times"></i>
+                    </div>
+                `;
+                contactList.appendChild(contactDiv);
+                nameInput.value = '';
+                numberInput.value = '';
+                toggleInputForm();
+            } else {
+                alert("Please fill in both fields.");
+            }
+        }
+
+        function deleteContact(element) {
+            const contactDiv = element.closest('.contact');
+            contactDiv.style.opacity = '0';
+            contactDiv.style.transform = 'scale(0.9)';
+            setTimeout(() => contactDiv.remove(), 300);
+        }
+    </script>
+</body>
+</html>

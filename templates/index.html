@@ -1,0 +1,773 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Droupati Safety AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Add these in the head section of your HTML templates -->
+<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --primary: #7209b7;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #1a1a1a;
+            --success: #4caf50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .map-section, .instruction-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        #map {
+            height: 600px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .emergency-btn {
+            background: var(--danger);
+            color: white;
+            font-size: 1.2rem;
+            width: 100%;
+            justify-content: center;
+            padding: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .emergency-btn:hover {
+            background: #d81b60;
+            transform: scale(1.02);
+        }
+
+        .switch {
+            width: 60px;
+            height: 34px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .instruction-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .instruction-section h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            padding: 1.5rem;
+            border-radius: 15px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .feature-card i {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-btn {
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+            margin-top: 1rem;
+            text-decoration: none;
+        }
+
+        .news-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            margin: 15vh auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            margin: 1rem 0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            #map {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .header-controls {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .emergency-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 1.2rem;
+    background: linear-gradient(135deg, #f72585 0%, #dc2f02 100%);
+    color: white;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(247, 37, 133, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.emergency-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.emergency-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(247, 37, 133, 0.6);
+    background: linear-gradient(135deg, #dc2f02 0%, #f72585 100%);
+}
+
+.emergency-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(247, 37, 133, 0.4);
+}
+
+.emergency-button:hover::before {
+    left: 100%;
+}
+
+.emergency-button i {
+    font-size: 1.8rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Add responsive styles */
+@media (max-width: 768px) {
+    .emergency-button {
+        font-size: 1.2rem;
+        padding: 1rem;
+    }
+    
+    .emergency-button i {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .emergency-button {
+        font-size: 1rem;
+        padding: 0.8rem;
+        letter-spacing: 1px;
+    }
+    
+    .emergency-button i {
+        font-size: 1.2rem;
+    }
+}
+#locationInfo {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+.pulse {
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+.moving {
+    background: #4CAF50 !important;
+}
+.stationary {
+    background: #FFA500 !important;
+}
+#animationContainer {
+    width: 150px;
+    height: 150px;
+    position: absolute; /* This positions it relative to the nearest positioned parent */
+    left: 50%;
+    bottom: 2%;
+    mix-blend-mode: multiply; /* Or another blend mode */
+    z-index: 10; /* Higher z-index to bring it on top */
+    filter: brightness(2.0);
+    filter: saturate(1.2);
+    transition: all 0.3s ease; 
+  }
+  
+    </style>
+</head>
+<body>
+ 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <div id="animationContainer" style=" cursor: pointer;"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">Draupadi-AI</a>
+            <div class="header-controls">
+                                <div id="sleepModeToggle" ></div>
+
+                <button class="btn btn-primary" id="keywordBtn">
+                    <i class="fas fa-key"></i>
+                    Set Keyword
+                </button>
+
+    </header>
+    <script src="{{ url_for('static', filename='sleepModeToggle.js') }}"></script>
+    <script>
+        // Initialize the sleep mode toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            new SleepModeToggle('sleepModeToggle');
+        });
+    </script>
+    <main class="main-content">
+        <div class="map-section">
+            <div id="locationInfo">
+                <div id="status">Status: Waiting for location...</div>
+                <div id="speed">Speed: 0 km/h</div>
+                <div id="accuracy">Accuracy: -- meters</div>
+                <div id="lastUpdate">Last Update: --</div>
+            </div>
+            <div id="map"></div>
+            <a href="/emergency" class="emergency-button">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Emergency</span>
+            </a>
+        </div>
+
+        <div class="instruction-section">
+            <h2>Safety Features</h2>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Real-time Protection</h3>
+                <p>Advanced AI monitoring and instant emergency response system</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-map-marked-alt"></i>
+                <h3>Location Tracking</h3>
+                <p>Precise location tracking  with safe zone mapping</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-bell"></i>
+                <h3>Smart Alerts</h3>
+                <p>Customizable alert system with emergency contacts integration</p>
+            </div>
+            <a href="/news" class="news-btn">
+                <i class="fas fa-newspaper"></i>
+                Latest Safety News
+            </a>
+        </div>
+    </main>
+<!-- 
+    <div href="/chatbot"class="chat-btn" id="chatBtn">
+        <i class="fas fa-comments"></i>
+    </div> -->
+
+    <div id="keywordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Set Safety Keyword</h2>
+            <input type="text" id="keywordInput" placeholder="Enter your safety keyword">
+            <button class="btn btn-primary" id="saveKeyword">Save Keyword</button>
+        </div>
+    </div>
+    <script>
+        // Select the container
+        const container = document.getElementById('animationContainer');
+
+        // Load the animation
+        const animation = lottie.loadAnimation({
+            container: container,          
+            renderer: 'svg',               
+            loop: true,                    
+            autoplay: true,                
+            path: './static/sir.json' // Check the path to your JSON file
+        });
+
+        // Log errors if loading fails
+        animation.addEventListener('data_failed', function() {
+            console.error("Animation failed to load. Please check the JSON file.");
+        });
+
+        // Redirect on click
+        container.addEventListener('click', function() {
+            window.location.href = '/chatbot';
+        });
+    </script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+
+// Get modal elements
+const keywordModal = document.getElementById('keywordModal');
+const keywordBtn = document.getElementById('keywordBtn');
+const closeBtn = document.querySelector('.close');
+const saveKeywordBtn = document.getElementById('saveKeyword');
+const keywordInput = document.getElementById('keywordInput');
+
+// Show modal
+keywordBtn.addEventListener('click', () => {
+    keywordModal.style.display = 'block';
+});
+
+// Close modal when clicking (X)
+closeBtn.addEventListener('click', () => {
+    keywordModal.style.display = 'none';
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', (event) => {
+    if (event.target === keywordModal) {
+        keywordModal.style.display = 'none';
+    }
+});
+
+// Save keyword
+saveKeywordBtn.addEventListener('click', async () => {
+    const keyword = keywordInput.value.trim();
+    if (keyword) {
+        // Save keyword to localStorage
+        localStorage.setItem('safetyKeyword', keyword);
+        
+        // Send keyword to backend
+        try {
+            const response = await fetch('/update_keyword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ keyword: keyword })
+            });
+            
+            if (response.ok) {
+                alert('Keyword saved successfully!');
+            } else {
+                alert('Failed to save keyword on server');
+            }
+        } catch (error) {
+            console.error('Error saving keyword:', error);
+            alert('Error saving keyword');
+        }
+        
+        keywordModal.style.display = 'none';
+    } else {
+        alert('Please enter a valid keyword');
+    }
+});
+
+// Load existing keyword if any
+document.addEventListener('DOMContentLoaded', () => {
+    const savedKeyword = localStorage.getItem('safetyKeyword') || 'help';
+    keywordInput.value = savedKeyword;
+});
+
+// Load existing keyword if any
+document.addEventListener('DOMContentLoaded', () => {
+    const savedKeyword = localStorage.getItem('safetyKeyword');
+    if (savedKeyword) {
+        keywordInput.value = savedKeyword;
+    }
+});
+
+        // Initialize map centered on Mumbai
+        const map = L.map('map').setView([19.0760, 72.8777], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Create layer groups
+        const crimeMarkers = L.layerGroup().addTo(map);
+        let userMarker = null;
+        let lastPosition = null;
+        let lastUpdateTime = null;
+
+        // Custom user location marker icon
+        const userIcon = L.divIcon({
+            className: 'user-marker',
+            html: '<div style="background-color: #2196F3; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);" class="pulse"></div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>Crime Intensity</h4>
+                <div class="legend-item"><span class="circle" style="background: red;"></span>High</div>
+                <div class="legend-item"><span class="circle" style="background: yellow;"></span>Medium</div>
+                <div class="legend-item"><span class="circle" style="background: green;"></span>Low</div>
+                <div class="legend-item"><span class="circle" style="background: #2196F3;"></span>Your Location</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        // Load crime data
+        async function loadCrimeData() {
+            try {
+                const response = await fetch('/get_crime_data');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch crime data');
+                }
+                const crimeData = await response.json();
+                
+                // Clear existing markers
+                crimeMarkers.clearLayers();
+                
+                // Add new markers with console logging
+                crimeData.forEach(crime => {
+                    console.log('Adding crime marker:', crime);
+                    const marker = L.circleMarker([crime.lat, crime.lng], {
+                        radius: 8,
+                        fillColor: crime.color,
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                    
+                    marker.bindPopup(`
+                        <strong>Type:</strong> ${crime.type}<br>
+                        <strong>Date:</strong> ${crime.date}<br>
+                        <strong>Time:</strong> ${crime.time}<br>
+                        <strong>Intensity:</strong> ${crime.intensity}
+                    `);
+                    
+                    crimeMarkers.addLayer(marker);
+                });
+                
+                console.log('Total markers added:', crimeData.length);
+            } catch (error) {
+                console.error('Error loading crime data:', error);
+                document.getElementById('status').textContent = 'Error loading crime data';
+            }
+        }
+
+        // Initialize the application
+        function init() {
+            // Load initial crime data
+            loadCrimeData();
+            
+            // Start watching user's location
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        if (!userMarker) {
+                            userMarker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
+                            map.setView([lat, lng], 16);
+                        } else {
+                            userMarker.setLatLng([lat, lng]);
+                        }
+                        
+                        document.getElementById('status').textContent = 'Status: Connected';
+                        document.getElementById('accuracy').textContent = `Accuracy: ${position.coords.accuracy.toFixed(1)} meters`;
+                        document.getElementById('lastUpdate').textContent = `Last Update: ${new Date().toLocaleTimeString()}`;
+                    },
+                    error => {
+                        console.error('Geolocation error:', error);
+                        document.getElementById('status').textContent = 'Status: Location error';
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 5000
+                    }
+                );
+            } else {
+                document.getElementById('status').textContent = 'Status: Geolocation not supported';
+            }
+            
+            // Refresh crime data every 5 minutes
+            setInterval(loadCrimeData, 300000);
+        }
+
+        // Start the application
+        init();
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Experiences - Droupati Safety AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7209b7;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #1a1a1a;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --info: #2196f3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            text-decoration: none;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .experiences-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .experience-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .experience-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .post-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .severity-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .severity-high {
+            background: var(--danger);
+            color: white;
+        }
+
+        .severity-medium {
+            background: var(--warning);
+            color: white;
+        }
+
+        .severity-low {
+            background: var(--info);
+            color: white;
+        }
+
+        .experience-content {
+            margin: 1rem 0;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .location-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f0f2f5;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .submit-experience {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .form-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #444;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .interactions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .interaction-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: #f0f2f5;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #555;
+        }
+
+        .interaction-btn:hover {
+            background: #e4e6e9;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">Droupati Safety AI</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="experiences-feed">
+            <!-- Experience Card 1 -->
+            <div class="experience-card">
+                <div class="experience-header">
+                    <div class="user-info">
+                        <div class="user-avatar">PR</div>
+                        <div class="user-details">
+                            <span class="username">Priya R.</span>
+                            <span class="post-time">2 hours ago</span>
+                        </div>
+                    </div>
+                    <span class="severity-badge severity-high">High Risk</span>
+                </div>
+                <div class="experience-content">
+                    <p>Today around 7 PM, I noticed suspicious individuals following women near Central Park. They were pretending to talk on phones but were clearly tracking movement patterns. I immediately alerted the police and they increased patrolling in the area. Please be cautious if you're passing through this area after dark.</p>
+                </div>
+                <div class="location-tag">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Central Park Area
+                </div>
+                <div class="interactions">
+                    <button class="interaction-btn">
+                        <i class="fas fa-thumbs-up"></i>
+                        Helpful (45)
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="fas fa-comment"></i>
+                        Comments (12)
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="fas fa-share"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Experience Card 2 -->
+            <div class="experience-card">
+                <div class="experience-header">
+                    <div class="user-info">
+                        <div class="user-avatar">AK</div>
+                        <div class="user-details">
+                            <span class="username">Amit K.</span>
+                            <span class="post-time">1 day ago</span>
+                        </div>
+                    </div>
+                    <span class="severity-badge severity-medium">Medium Risk</span>
+                </div>
+                <div class="experience-content">
+                    <p>Warning about a scam near Metro Station. Some people are pretending to be ticket checkers and demanding money from tourists. They have fake IDs but you can spot them because they don't wear the official uniform. Always ask for proper identification and report any suspicious activity to station authorities.</p>
+                </div>
+                <div class="location-tag">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Metro Station South Gate
+                </div>
+                <div class="interactions">
+                    <button class="interaction-btn">
+                        <i class="fas fa-thumbs-up"></i>
+                        Helpful (78)
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="fas fa-comment"></i>
+                        Comments (23)
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="fas fa-share"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Experience Card 3 -->
+            <div class="experience-card">
+                <div class="experience-header">
+                    <div class="user-info">
+                        <div class="user-avatar">SM</div>
+                        <div class="user-details">
+                            <span class="username">Sarah M.</span>
+                            <span class="post-time">3 days ago</span>
+                        </div>
+                    </div>
+                    <span class="severity-badge severity-low">Low Risk</span>
+                </div>
+                <div class="experience-content">
+                    <p>Just wanted to share a positive update! The broken streetlights on Market Street have been fixed after multiple community reports. The area is much safer now for evening commuters. Thanks to everyone who reported this issue. It shows how community action can make a difference!</p>
+                </div>
+                <div class="location-tag">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Market Street
+                </div>
+                <div class="interactions">
+                    <button class="interaction-btn">
+                        <i class="fas fa-thumbs-up"></i>
+                        Helpful (156)
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="fas fa-comment"></i>
+                        Comments (34)
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="fas fa-share"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-experience">
+            <h2 class="form-title">Share Your Experience</h2>
+            <form id="experienceForm">
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" placeholder="Enter location" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Risk Level</label>
+                    <select class="form-input" required>
+                        <option value="">Select risk level</option>
+                        <option value="high">High Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="low">Low Risk</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Your Experience</label>
+                    <textarea class="form-input form-textarea" placeholder="Share your experience to help others..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    Share Experience
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Form submission handling
+        document.getElementById('experienceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for sharing your experience! It will be reviewed and posted shortly.');
+            this.reset();
+        });
+
+        // Interaction buttons functionality
+        document.querySelectorAll('.interaction-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.querySelector('.fa-thumbs-up')) {
+                    const currentCount = parseInt(this.textContent.match(/\d+/)[0]);
+                    this.innerHTML = <i class="fas fa-thumbs-up"></i> Helpful (${currentCount + 1});
+                }
+            });
+        });
+    </script>
+</body>
+</html>

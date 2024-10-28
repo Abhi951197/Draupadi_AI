@@ -1,0 +1,252 @@
+
+
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Safety Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+       
+        .legend {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        .legend-item {
+            margin: 5px 0;
+        }
+        .circle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        #locationInfo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .moving {
+            background: #4CAF50 !important;
+        }
+        .stationary {
+            background: #FFA500 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="locationInfo">
+        <div id="status">Status: Waiting for location...</div>
+        <div id="speed">Speed: 0 km/h</div>
+        <div id="accuracy">Accuracy: -- meters</div>
+        <div id="lastUpdate">Last Update: --</div>
+    </div>
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Mumbai
+        const map = L.map('map').setView([19.0760, 72.8777], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Create layer groups
+        const crimeMarkers = L.layerGroup().addTo(map);
+        let userMarker = null;
+        let lastPosition = null;
+        let lastUpdateTime = null;
+
+        // Custom user location marker icon
+        const userIcon = L.divIcon({
+            className: 'user-marker',
+            html: '<div style="background-color: #2196F3; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);" class="pulse"></div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>Crime Intensity</h4>
+                <div class="legend-item"><span class="circle" style="background: red;"></span>High</div>
+                <div class="legend-item"><span class="circle" style="background: yellow;"></span>Medium</div>
+                <div class="legend-item"><span class="circle" style="background: green;"></span>Low</div>
+                <div class="legend-item"><span class="circle" style="background: #2196F3;"></span>Your Location</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        // Load crime data
+        async function loadCrimeData() {
+            try {
+                const response = await fetch('/get_crime_data');
+                const crimeData = await response.json();
+                
+                crimeMarkers.clearLayers();
+                
+                crimeData.forEach(crime => {
+                    const marker = L.circleMarker([crime.lat, crime.lng], {
+                        radius: 8,
+                        fillColor: crime.color,
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                    
+                    marker.bindPopup(`
+                        <strong>Type:</strong> ${crime.type}<br>
+                        <strong>Date:</strong> ${crime.date}<br>
+                        <strong>Time:</strong> ${crime.time}<br>
+                        <strong>Intensity:</strong> ${crime.intensity}
+                    `);
+                    
+                    crimeMarkers.addLayer(marker);
+                });
+            } catch (error) {
+                console.error('Error loading crime data:', error);
+            }
+        }
+
+        // Calculate speed between two points
+        function calculateSpeed(oldPos, newPos, timeDiff) {
+            if (!oldPos || !newPos || !timeDiff) return 0;
+            
+            const R = 6371; // Earth's radius in km
+            const dLat = (newPos.lat - oldPos.lat) * Math.PI / 180;
+            const dLon = (newPos.lng - oldPos.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(oldPos.lat * Math.PI / 180) * Math.cos(newPos.lat * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            
+            // Convert to km/h
+            return (distance / (timeDiff / 3600000)).toFixed(1);
+        }
+
+        // Update user's location
+        function updateUserLocation(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            const currentTime = new Date();
+            
+            // Calculate speed
+            let speed = 0;
+            if (lastPosition && lastUpdateTime) {
+                speed = calculateSpeed(
+                    lastPosition,
+                    {lat, lng},
+                    currentTime - lastUpdateTime
+                );
+            }
+
+            // Update marker
+            if (userMarker) {
+                userMarker.setLatLng([lat, lng]);
+            } else {
+                userMarker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
+                map.setView([lat, lng], 16);
+            }
+
+            // Update UI
+            document.getElementById('status').textContent = `Status: ${speed > 0 ? 'Moving' : 'Stationary'}`;
+            document.getElementById('speed').textContent = `Speed: ${speed} km/h`;
+            document.getElementById('accuracy').textContent = `Accuracy: ${accuracy.toFixed(1)} meters`;
+            document.getElementById('lastUpdate').textContent = `Last Update: ${currentTime.toLocaleTimeString()}`;
+
+            // Update marker appearance based on movement
+            const markerDiv = userMarker.getElement();
+            if (markerDiv) {
+                const dot = markerDiv.querySelector('div');
+                if (dot) {
+                    if (speed > 0) {
+                        dot.classList.add('moving');
+                        dot.classList.remove('stationary');
+                    } else {
+                        dot.classList.add('stationary');
+                        dot.classList.remove('moving');
+                    }
+                }
+            }
+
+            // Store current position and time for next update
+            lastPosition = {lat, lng};
+            lastUpdateTime = currentTime;
+        }
+
+        // Handle location errors
+        function handleLocationError(error) {
+            const statusElement = document.getElementById('status');
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    statusElement.textContent = "Status: Location access denied";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    statusElement.textContent = "Status: Location unavailable";
+                    break;
+                case error.TIMEOUT:
+                    statusElement.textContent = "Status: Location request timed out";
+                    break;
+                default:
+                    statusElement.textContent = "Status: Unknown location error";
+            }
+        }
+
+        // Initialize the application
+        function init() {
+            // Load initial crime data
+            loadCrimeData();
+            
+            // Start watching user's location with high accuracy
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(updateUserLocation, handleLocationError, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 5000
+                });
+            } else {
+                alert('Geolocation is not supported by your browser');
+            }
+            
+            // Refresh crime data periodically (every 5 minutes)
+            setInterval(loadCrimeData, 300000);
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
