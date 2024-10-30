@@ -6,7 +6,8 @@ from twilio.rest import Client
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from geocoder import ip
+from geocoder import IP
+
 
 # Twilio account credentials
 account_sid = "AC2b4a1447d8478eb8a489b6f0a3274fa9"
