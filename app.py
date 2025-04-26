@@ -39,7 +39,7 @@ except Exception as e:
 
 # Twilio account credentials
 account_sid = "AC428132525b161a85f44b619be525ec23"
-auth_token = "ade1d61a9822aaffc84e0c595bce39c8"
+auth_token = "16d550bbc85cbe1fd214c31dd87e90e9"
 client = Client(account_sid, auth_token)
 
 # Load ML model for audio detection
@@ -104,7 +104,7 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 22050
 CHUNK = RATE * 3
-SILENCE_THRESHOLD = 0.1
+SILENCE_THRESHOLD = 0.6
 FEATURES_LENGTH = 77
 
 # Directory to save audio chunks
@@ -325,26 +325,6 @@ def toggle_sleep():
         }), 500
 
 
-
-# @app.route('/toggle_sleep', methods=['POST'])
-# def toggle_sleep():
-#     """Toggle sleep mode on/off with a 30-minute default timer"""
-#     global sleep_until
-#     data = request.json
-#     is_sleeping = data.get('sleeping', False)
-    
-#     with sleep_lock:
-#         if is_sleeping:
-#             # Set sleep mode for 30 minutes
-#             sleep_until = time.time() + 30 * 60
-#             logging.info("Sleep mode activated for 30 minutes")
-#         else:
-#             # Deactivate sleep mode immediately
-#             sleep_until = 0
-#             logging.info("Sleep mode deactivated")
-    
-#     return jsonify({"success": True, "sleeping": is_sleeping})
-
 def verify_keyword(text):
     current_keyword = load_keyword().lower()
     return current_keyword in text.lower()
@@ -371,7 +351,7 @@ def two_stage_verification(recognizer, source):
         logging.info(f"Keyword verified: {keyword_verified}")
         
         # Record audio for scream detection
-        audio_file_path = record_audio(record_seconds=6)  # Reduced from 8 to 3 seconds
+        audio_file_path = record_audio(record_seconds=8)  # Reduced from 8 to 3 seconds
         scream_detected = predict_audio(audio_file_path)
         logging.info(f"Scream detected: {scream_detected}")
 
@@ -382,10 +362,7 @@ def two_stage_verification(recognizer, source):
         logging.info("Stage 1: No speech detected within timeout")
     except sr.UnknownValueError:
         logging.info("Stage 1: Speech was unintelligible")
-        audio_file_path = record_audio(record_seconds=6)
-        predict_audio(audio_file_path)
-        if(scream_detected):
-            pass
+      
             
     except sr.RequestError as e:
         logging.error(f"Stage 1: Could not request results from speech recognition service: {e}")
@@ -422,10 +399,7 @@ def two_stage_verification(recognizer, source):
                 logging.info("Stage 2: No speech detected within timeout")
             except sr.UnknownValueError:
                 logging.info("Stage 2: Speech was unintelligible")
-                audio_file_path = record_audio(record_seconds=6)
-                predict_audio(audio_file_path)
-                if(scream_detected):
-                 pass
+               
             
             except sr.RequestError as e:
                 logging.error(f"Stage 2: Could not request results from speech recognition service: {e}")
@@ -433,6 +407,89 @@ def two_stage_verification(recognizer, source):
                 logging.error(f"Stage 2 error: {e}")
 
     return False
+# def two_stage_verification(recognizer, source):
+#     if is_system_sleeping():
+#         logging.info("System is in sleep mode, skipping verification")
+#         return False
+
+#     trigger_detected = False
+
+#     try:
+#         logging.info("Stage 1: Listening for initial trigger...")
+#         audio = recognizer.listen(source, timeout=3, phrase_time_limit=3)
+#         try:
+#             text = recognizer.recognize_google(audio)
+#             logging.info(f"Stage 1: Recognized text: {text}")
+
+#             # Check for trigger word
+#             current_keyword = load_keyword()
+#             trigger_word_detected = current_keyword in text.lower()
+#             keyword_verified = verify_keyword(text)
+
+#             logging.info(f"Keyword detected: {trigger_word_detected}")
+#             logging.info(f"Keyword verified: {keyword_verified}")
+
+#             # Determine if trigger is detected
+#             trigger_detected = trigger_word_detected and keyword_verified
+#             logging.info(f"Stage 1 trigger_detected: {trigger_detected}")
+
+#         except sr.UnknownValueError:
+#             logging.info("Stage 1: Speech was unintelligible, skipping to recording")
+#         except sr.RequestError as e:
+#             logging.error(f"Stage 1: Could not request results from speech recognition service: {e}")
+
+#         # Proceed to scream detection if no valid trigger is detected
+#         if not trigger_detected:
+#             logging.info("Stage 1: Recording for scream detection...")
+#             audio_file_path = record_audio(record_seconds=8)  # Reduced from 8 to 3 seconds
+#             scream_detected = predict_audio(audio_file_path)
+#             logging.info(f"Scream detected: {scream_detected}")
+#             trigger_detected = scream_detected
+
+#     except sr.WaitTimeoutError:
+#         logging.info("Stage 1: No speech detected within timeout")
+#     except Exception as e:
+#         logging.error(f"Stage 1 error: {e}")
+
+#     if trigger_detected:
+#         logging.info("Stage 1 trigger detected, proceeding to Stage 2...")
+#         end_time = time.time() + 30  # Reduced from 60 to 30 seconds
+
+#         while time.time() < end_time:
+#             try:
+#                 logging.info("Stage 2: Listening for confirmation...")
+#                 audio = recognizer.listen(source, timeout=8, phrase_time_limit=3)
+#                 try:
+#                     text = recognizer.recognize_google(audio)
+#                     logging.info(f"Stage 2: Recognized text: {text}")
+
+#                     current_keyword = load_keyword()
+#                     trigger_word_detected = current_keyword in text.lower()
+#                     keyword_verified = verify_keyword(text)
+
+#                     logging.info(f"Stage 2 - Keyword detected: {trigger_word_detected}")
+#                     logging.info(f"Stage 2 - Keyword verified: {keyword_verified}")
+
+#                     audio_file_path = record_audio(record_seconds=3)
+#                     scream_detected = predict_audio(audio_file_path)
+#                     logging.info(f"Stage 2 - Scream detected: {scream_detected}")
+
+#                     if (trigger_word_detected and keyword_verified) or scream_detected:
+#                         logging.info("Stage 2 verification successful!")
+#                         return True
+#                 except sr.UnknownValueError:
+#                     logging.info("Stage 2: Speech was unintelligible")
+#                 except sr.RequestError as e:
+#                     logging.error(f"Stage 2: Could not request results from speech recognition service: {e}")
+
+#             except sr.WaitTimeoutError:
+#                 logging.info("Stage 2: No speech detected within timeout")
+#             except Exception as e:
+#                 logging.error(f"Stage 2 error: {e}")
+
+#     return False
+
+
 
 def predict_audio(file_path):
     try:
@@ -469,14 +526,14 @@ def confirm_alert():
         location = f"{g.latlng[0]},{g.latlng[1]}"
         print(f"Alert confirmed! Device location: {location}")
 
-        # Create a Google Maps link
+        # Create a Google Maps link 
         map_link = f"https://www.google.com/maps/place/{location}"
 
         # Send SMS with location
         message = client.messages.create(
             body=f"EMERGENCY ALERT: User in danger! Location: {location}. Map: {map_link}",
             from_="+12097530237",
-            to="+919511972070"
+            to="+918446429457"
         )
         print("Emergency SMS sent!")
 
@@ -529,23 +586,6 @@ def send_alert(location, map_link, shareable_link, client):
         logging.error(f"Failed to send SMS: {e}")
         return False
 
-# def handle_alert_process(client, location, map_link, shareable_link):
-#     global alert_active
-    
-#     alert_cancelled.clear()
-#     webbrowser.open('http://127.0.0.1:5000/alert')
-    
-#     cancelled = alert_cancelled.wait(timeout=10)
-    
-#     if cancelled:
-#         logging.info("Alert was cancelled by user")
-#         alert_active = False
-#         return False
-#     else:
-#         if alert_active:
-#             logging.info("No cancellation received, sending alert")
-#             return send_alert(location, map_link, shareable_link, client)
-        return False
 
 # Flask Routes
 @app.route('/')
@@ -582,12 +622,7 @@ def alert():
     alert_active = True
     return render_template('alert.html')
 
-# @app.route('/cancel', methods=['POST'])
-# def cancel_alert():
-#     global alert_active
-#     alert_active = False
-#     alert_cancelled.set()
-#     return '', 204
+
 
 @app.route('/set_keyword', methods=['POST'])
 def set_keyword():
@@ -750,37 +785,6 @@ def main_audio_monitoring():
             logging.error(f"Error in main audio loop: {e}")
             time.sleep(1)
 
-            
-# @app.route("/confirm_alert", methods=["POST"])
-# def confirm_alert():
-#     try:
-#         # Get device location
-#         g = geocoder.ip('me')
-#         location = f"{g.latlng[0]},{g.latlng[1]}"
-#         print(f"Alert confirmed! Device location: {location}")
-
-#         # Create a Google Maps link
-#         map_link = f"https://www.google.com/maps/place/{location}"
-
-#         # Send SMS with location
-#         message = client.messages.create(
-#             body=f"EMERGENCY ALERT: User in danger! Location: {location}. Map: {map_link}",
-#             from_="+12097530237",
-#             to="+919511972070"
-#         )
-#         print("Emergency SMS sent!")
-
-#         return jsonify({
-#             "message": "Alert confirmed and sent to emergency services.",
-#             "location": location
-#         })
-        
-#     except Exception as e:
-#         print(f"Error in confirm_alert: {str(e)}")
-#         return jsonify({
-#             "message": "Error processing alert. Emergency services have been notified.",
-#             "error": str(e)
-#         }), 500
         
 
 if __name__ == '__main__':
