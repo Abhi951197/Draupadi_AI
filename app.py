@@ -48,7 +48,7 @@ model_audio = joblib.load('models/final_random_forest_model.pkl')
 # Modified crime data loading function
 def load_crime_data():
     try:
-        df = pd.read_csv('datasets\local_crime_data_20241026_020944.csv')
+        df = pd.read_csv('datasets/local_crime_data_20241026_020944.csv')
         crime_data = []
         
         intensity_colors = {
