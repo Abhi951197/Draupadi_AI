@@ -814,6 +814,7 @@ if __name__ == '__main__':
         audio_thread.start()
         logging.info("Audio monitoring thread started")
         
-        app.run(debug=True, use_reloader=False, threaded=True,port=5000)
+        app.run(debug=True, use_reloader=False, threaded=True, host="0.0.0.0", port=5000)
+
     except Exception as e:
         logging.error(f"Failed to start application: {e}")
