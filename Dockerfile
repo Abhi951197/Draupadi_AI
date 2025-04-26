@@ -24,4 +24,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # Step 7: Set the command to run the app (for example, using gunicorn for production)
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--log-level=info", "--access-logfile=-", "--error-logfile=-"]
+
