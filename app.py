@@ -37,10 +37,23 @@ except Exception as e:
     print(f"Warning: Could not initialize ChatOllama model: {e}")
     model_chat = None
 
-# Twilio account credentials
-account_sid = "AC428132525b161a85f44b619be525ec23"
-auth_token = "16d550bbc85cbe1fd214c31dd87e90e9"
+from twilio.rest import Client
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Use config values
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+
 client = Client(account_sid, auth_token)
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    print("backend chalra hai bsdk waps jaa")
+    return "backend chalra hai bsdk waps jaa", 200
 
 # Load ML model for audio detection
 model_audio = joblib.load('models/final_random_forest_model.pkl')
