@@ -9,8 +9,8 @@ from googleapiclient.http import MediaFileUpload
 from geocoder import ip
 
 # Twilio account credentials
-account_sid = "AC2b4a1447d8478eb8a489b6f0a3274fa9"
-auth_token = "bdd89ab70ac88734217bc6318903b53f"
+account_sid = "ADD_YOUR_TWILIO_ACCOUNT_SID"
+auth_token = "TWILIO_TOKEN"
 client = Client(account_sid, auth_token)
 
 # Authenticate Google Drive API
